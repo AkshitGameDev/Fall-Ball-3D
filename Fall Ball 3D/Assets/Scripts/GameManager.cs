@@ -8,21 +8,20 @@ using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
-
     //splash
     public Animator splashAnim;
-    private string animationStateName = "SplashAnimation";
+    private string animationStateName = "ending";
     private bool hasFired = false;
 
     public static GameManager instance = null;
 
     public Canvas gamePlayCanvas;
     public GameObject[] Screans;
+    AnimatorStateInfo stateInfo;
 
     string Level;
     int gems = 0;
     public Button TestBut;
-
 
     private void Awake()
     {
@@ -38,27 +37,20 @@ public class GameManager : MonoBehaviour
             Level = PlayerPrefs.GetString("CurLevel");
             gems = PlayerPrefs.GetInt("CurGems");
         }
-
     }
-    // Start is called before the first frame update
     void Start(){
+        stateInfo = splashAnim.GetCurrentAnimatorStateInfo(0);
     }
-
-    // Update is called once per frame
     void Update() {
-        AnimatorStateInfo stateInfo = splashAnim.GetCurrentAnimatorStateInfo(0);
-        if (stateInfo.IsName(animationStateName) && !hasFired)
-        {
-            OnAnimationComplete();
-            hasFired = true; // Prevent multiple triggers
-        }
-    }
 
-    void OnAnimationComplete()
+    }
+   
+    public void OnAnimationComplete()
     {
+        CreateMenuScene();
+        SwitchScreens(1);
         SceneManager.LoadScene(1);
     }
-
     public void SwitchScreens(int screenName)
     {
         for (int i = 0; i < Screans.Length; i++)
@@ -73,7 +65,10 @@ public class GameManager : MonoBehaviour
             }
         }
     }
+    public void CreateMenuScene()
+    {
 
+    }
     public void ConstructGameScene(){
 
     }
