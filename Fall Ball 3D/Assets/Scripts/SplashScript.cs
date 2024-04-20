@@ -8,4 +8,7 @@ public class SplashScript : MonoBehaviour
     {
         GameManager.instance.OnAnimationComplete();
     }
+    public void PlaySplashAudio (){
+        AudioManager.instance.playSfx(AudioManager.instance.startSfx);
+    }
 }

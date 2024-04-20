@@ -13,6 +13,10 @@ public class GameManager : MonoBehaviour
     private string animationStateName = "ending";
     private bool hasFired = false;
 
+    //Menu
+    
+
+
     public static GameManager instance = null;
 
     public Canvas gamePlayCanvas;
@@ -41,10 +45,6 @@ public class GameManager : MonoBehaviour
     void Start(){
         stateInfo = splashAnim.GetCurrentAnimatorStateInfo(0);
     }
-    void Update() {
-
-    }
-   
     public void OnAnimationComplete()
     {
         CreateMenuScene();
@@ -67,9 +67,9 @@ public class GameManager : MonoBehaviour
     }
     public void CreateMenuScene()
     {
-
+        AudioManager.instance.playLooping(AudioManager.instance.MenuSfx);
     }
-    public void ConstructGameScene(){
+    public void ConstructGameScene(int level){
 
     }
 }
