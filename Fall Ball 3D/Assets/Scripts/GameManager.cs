@@ -14,7 +14,8 @@ public class GameManager : MonoBehaviour
     private bool hasFired = false;
 
     //Menu
-    
+    public GameObject MinusPoint = null;
+    public GameObject PlusPoint = null;
 
 
     public static GameManager instance = null;

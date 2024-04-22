@@ -22,19 +22,21 @@ public class MenuScreenController : MonoBehaviour
     int curpos = 0;
     GameObject[] allFrags;
     public float speed = 1.0f;
+    public GameObject MinusPoint = null;
+    public GameObject PlusPoint = null;
     void Start()
     {
         fragColors = new Color[Count];
         allFrags = new GameObject[Count];
         for (int i = 0; i < Count; i++)
         {
-            float hue = (float)i / Count;
+            float hue = UnityEngine.Random.Range(0f,1f);
             float saturation = 1.0f;
             float value = 1.0f;
             fragColors[i] = Color.HSVToRGB(hue, saturation, value);
         }
         int heighPerFragment = Screen.height;
-        int WidthPerFragment = Screen.width / Count;
+        int WidthPerFragment = Screen.width / Count-1;
         for (int i = 0; i < Count; i++)
         {
             fragIndex++;
@@ -65,7 +67,7 @@ public class MenuScreenController : MonoBehaviour
         {
             for (int i = 0; i < Count; i++)
             {
-                if (allFrags[i].gameObject.GetComponent<RectTransform>().position.x != -960f)
+                if (allFrags[i].gameObject.GetComponent<RectTransform>().position.x != MinusPoint.transform.position.x)
                 {
                     MoveIndividualBlocks(i);
                 }
@@ -86,7 +88,7 @@ public class MenuScreenController : MonoBehaviour
         void RepositionIndividualBlock(int index)
         {
             allFrags[index].gameObject.GetComponent<RectTransform>().position = new Vector3(
-                960f
+                PlusPoint.transform.position.x
                 , allFrags[index].gameObject.transform.position.y
                 , allFrags[index].gameObject.transform.position.z) ;
         }
