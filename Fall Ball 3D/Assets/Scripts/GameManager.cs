@@ -1,7 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -12,6 +8,11 @@ public class GameManager : MonoBehaviour
     public Animator splashAnim;
     private string animationStateName = "ending";
     private bool hasFired = false;
+
+    //Menu
+    public GameObject MinusPoint = null;
+    public GameObject PlusPoint = null;
+
 
     public static GameManager instance = null;
 
@@ -41,10 +42,6 @@ public class GameManager : MonoBehaviour
     void Start(){
         stateInfo = splashAnim.GetCurrentAnimatorStateInfo(0);
     }
-    void Update() {
-
-    }
-   
     public void OnAnimationComplete()
     {
         CreateMenuScene();
@@ -67,9 +64,15 @@ public class GameManager : MonoBehaviour
     }
     public void CreateMenuScene()
     {
+        AudioManager.instance.playLooping(AudioManager.instance.MenuSfx);
+    }
+
+    public void onClickPlayButton()
+    {
 
     }
-    public void ConstructGameScene(){
+
+    public void ConstructGameScene(int level){
 
     }
 }
