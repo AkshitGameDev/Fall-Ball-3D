@@ -35,8 +35,13 @@ public class MenuScreenController : MonoBehaviour
             float value = 1.0f;
             fragColors[i] = Color.HSVToRGB(hue, saturation, value);
         }
+
+        MinusPoint.transform.position = new Vector3(MinusPoint.transform.position.x - (Screen.width / Count),
+        MinusPoint.transform.position.y,
+        MinusPoint.transform.position.z);
+
         int heighPerFragment = Screen.height;
-        int WidthPerFragment = Screen.width / Count-1;
+        int WidthPerFragment = (Screen.width + (Screen.width/Count)) / Count;
         for (int i = 0; i < Count; i++)
         {
             fragIndex++;

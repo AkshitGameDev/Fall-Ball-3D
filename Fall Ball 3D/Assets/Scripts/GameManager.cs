@@ -1,7 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -70,6 +66,12 @@ public class GameManager : MonoBehaviour
     {
         AudioManager.instance.playLooping(AudioManager.instance.MenuSfx);
     }
+
+    public void onClickPlayButton()
+    {
+
+    }
+
     public void ConstructGameScene(int level){
 
     }
