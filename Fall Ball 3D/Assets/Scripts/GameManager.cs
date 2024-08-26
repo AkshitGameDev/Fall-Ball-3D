@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -101,7 +102,9 @@ public class GameManager : MonoBehaviour
     // Button Events 
     public void onClickPlayButton()
     {
-        
+        Debug.Log("click btn");
+        SwitchScreens(2);
+        AudioManager.instance.Tween(1);
     }
 
     public void ConstructGameScene(int level){
