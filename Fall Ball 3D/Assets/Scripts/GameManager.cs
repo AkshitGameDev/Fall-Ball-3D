@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -13,8 +14,24 @@ public class GameManager : MonoBehaviour
     public GameObject MinusPoint = null;
     public GameObject PlusPoint = null;
 
+    public GameObject ButtonPlay = null;
+    public GameObject ButtonSettings = null;
+    public GameObject ButtonShop = null;
+
+    //settings
+
+
+
+    //shop
+
+
+
+    //
 
     public static GameManager instance = null;
+
+
+
 
     public Canvas gamePlayCanvas;
     public GameObject[] Screans;
@@ -22,7 +39,7 @@ public class GameManager : MonoBehaviour
 
     string Level;
     int gems = 0;
-    public Button TestBut;
+    public Button TestButon;
 
     private void Awake()
     {
@@ -48,11 +65,17 @@ public class GameManager : MonoBehaviour
         SwitchScreens(1);
         SceneManager.LoadScene(1);
     }
-    public void SwitchScreens(int screenName)
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="ScreenIndex"></param>
+
+    public void SwitchScreens(int ScreenIndex)
     {
         for (int i = 0; i < Screans.Length; i++)
         {
-            if (screenName == i)
+            if (ScreenIndex == i)
             {
                 Screans[i].SetActive(true);
             }
@@ -62,17 +85,34 @@ public class GameManager : MonoBehaviour
             }
         }
     }
+
+    //On Screen Opening 
     public void CreateMenuScene()
     {
         AudioManager.instance.playLooping(AudioManager.instance.MenuSfx);
     }
 
+
+
+    //On Screen Close/Pause 
+
+
+
+
+    // Button Events 
     public void onClickPlayButton()
     {
-
+        Debug.Log("click btn");
+        SwitchScreens(2);
+        AudioManager.instance.Tween(1);
     }
 
     public void ConstructGameScene(int level){
 
     }
+
+
+    // PLay button Clicke Events
+
+       
 }

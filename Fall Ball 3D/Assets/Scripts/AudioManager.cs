@@ -6,6 +6,8 @@ using UnityEngine.UI;
 public class AudioManager : MonoBehaviour
 {
 
+
+
     public static AudioManager instance = null;
     AudioSource Source = null;
     bool mute = false;
@@ -14,6 +16,10 @@ public class AudioManager : MonoBehaviour
     // public audio clips
     public AudioClip MenuSfx = null;
     public AudioClip startSfx = null;
+
+    //Lean Tween variables
+    public float twoWayTweenTime = 1f;
+public float incDicMultiplier = 7;
 
     private void Awake()
     {
@@ -35,4 +41,22 @@ public class AudioManager : MonoBehaviour
             Source.PlayOneShot(clip);
         }
     }
+
+    // direction can be 1 || 0 : 1 to decreas the volume and 0   for increasing the volume
+    public void Tween(int direction)
+    {
+        if (direction == 1){
+            Debug.Log("twinning audio down");
+            Source.volume = Source.volume / incDicMultiplier;
+            Debug.Log("twinning audio down2");
+        }
+        else if (direction == 0){
+
+            Debug.Log("twinning audio UP");
+            Source.volume =  Source.volume * incDicMultiplier;
+            }
+        else
+            Debug.LogWarning("Invalid Direction /n direction can be 1 || 0 : 1 to decreas the volume and 0 for increasing the volume");
+    }
+
 }
