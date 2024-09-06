@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -40,6 +41,8 @@ public class GameManager : MonoBehaviour
     string Level;
     int gems = 0;
     public Button TestButon;
+
+    bool FirstTimePlaying = true;
 
     private void Awake()
     {
@@ -102,17 +105,30 @@ public class GameManager : MonoBehaviour
         SwitchScreens(2);
         AudioManager.instance.Tween(1);
         SceneManager.LoadScene(2);
-        ConstructGameScene(1);
+        if (FirstTimePlaying) {
+            StartCoroutine(LoadLevelAsync(DataManager.Instance.myLevelList.levels[0].level));
+        }
+    }
+   
+
+    private IEnumerator LoadLevelAsync(int levelName)
+    {
+        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(2);
+
+        while (!asyncLoad.isDone)
+        {
+            yield return null;
+        }
+
+        OnLevelLoaded();
     }
 
-    public void ConstructGameScene(int level){
-
-
+    private void OnLevelLoaded()
+    {
+        SwitchScreens(3);
+        AudioManager.instance.Tween(0);
 
     }
-
-
-    // PLay button Clicke Events
+}
 
        
-}
