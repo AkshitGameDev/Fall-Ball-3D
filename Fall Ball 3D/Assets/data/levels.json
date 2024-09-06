@@ -1,0 +1,17 @@
+{
+  "levels": [
+    {
+      "level": 1,
+      "blocks":50
+    },
+    {
+      "level": 2,
+      "blocks":100
+
+    },
+    {
+      "level": 3,
+      "blocks":150
+    }
+  ]
+}

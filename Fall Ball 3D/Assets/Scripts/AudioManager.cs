@@ -46,9 +46,8 @@ public float incDicMultiplier = 7;
     public void Tween(int direction)
     {
         if (direction == 1){
-            Debug.Log("twinning audio down");
             Source.volume = Source.volume / incDicMultiplier;
-            Debug.Log("twinning audio down2");
+            
         }
         else if (direction == 0){
 
