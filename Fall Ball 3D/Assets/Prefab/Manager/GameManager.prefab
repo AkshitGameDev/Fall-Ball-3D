@@ -1252,6 +1252,7 @@ MonoBehaviour:
   MenuSfx: {fileID: 8300000, guid: b735a66a6295f2d45bbeea3c45c5db59, type: 3}
   startSfx: {fileID: 8300000, guid: f82d6cc43d73af247b208993660fcab8, type: 3}
   twoWayTweenTime: 0.18
+  incDicMultiplier: 7
 --- !u!1 &6397608064821736836
 GameObject:
   m_ObjectHideFlags: 0

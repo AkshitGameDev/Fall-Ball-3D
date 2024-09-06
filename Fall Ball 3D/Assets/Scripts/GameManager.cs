@@ -92,11 +92,7 @@ public class GameManager : MonoBehaviour
         AudioManager.instance.playLooping(AudioManager.instance.MenuSfx);
     }
 
-
-
     //On Screen Close/Pause 
-
-
 
 
     // Button Events 
@@ -105,9 +101,13 @@ public class GameManager : MonoBehaviour
         Debug.Log("click btn");
         SwitchScreens(2);
         AudioManager.instance.Tween(1);
+        SceneManager.LoadScene(2);
+        ConstructGameScene(1);
     }
 
     public void ConstructGameScene(int level){
+
+
 
     }
 
