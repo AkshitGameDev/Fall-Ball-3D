@@ -154,6 +154,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   TotalblocksSpawnnedInTower: 0
   blocksList: []
+  stagePrefab: {fileID: 7399102277533891148, guid: 9bba6d6b860e43143a45152e42b90686, type: 3}
+  blockPrefab: {fileID: 7637140466619673045, guid: 234a66a6e01258343a54d1e12b82956d, type: 3}
 --- !u!4 &241478092
 Transform:
   m_ObjectHideFlags: 0
