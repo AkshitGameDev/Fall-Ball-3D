@@ -106,14 +106,27 @@ public class GameManager : MonoBehaviour
         AudioManager.instance.Tween(1);
         SceneManager.LoadScene(2);
         if (FirstTimePlaying) {
-            StartCoroutine(LoadLevelAsync(DataManager.Instance.myLevelList.levels[0].level));
+            StartCoroutine(LoadLevelAsync(2));
         }
     }
    
-
+    //for level index
     private IEnumerator LoadLevelAsync(int levelName)
     {
-        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(2);
+        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(levelName);
+
+        while (!asyncLoad.isDone)
+        {
+            yield return null;
+        }
+
+        OnLevelLoaded();
+    }
+
+    // for string
+    private IEnumerator LoadLevelAsync(string levelName)
+    {
+        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(levelName);
 
         while (!asyncLoad.isDone)
         {
@@ -125,8 +138,20 @@ public class GameManager : MonoBehaviour
 
     private void OnLevelLoaded()
     {
-        SwitchScreens(3);
-        AudioManager.instance.Tween(0);
+        if (StageSpawnner.instance != null)
+        {
+            SwitchScreens(3);
+            AudioManager.instance.Tween(0);
+            // local Storage code gose here
+            int level = 0; //level should be equal to the last level played by the player before closing the game it should be saved in api(will be made later) and local storage '0' is for reference.
+            int blocks = DataManager.Instance.myLevelList.levels[level].blocks;
+
+            StageSpawnner.instance.getCredentials(blocks);
+
+
+
+        }
+
 
     }
 }
