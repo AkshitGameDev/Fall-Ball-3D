@@ -16,10 +16,11 @@ public class AudioManager : MonoBehaviour
     // public audio clips
     public AudioClip MenuSfx = null;
     public AudioClip startSfx = null;
+    public AudioClip endSfx = null;
 
     //Lean Tween variables
     public float twoWayTweenTime = 1f;
-public float incDicMultiplier = 7;
+    public float incDicMultiplier = 7;
 
     private void Awake()
     {
@@ -51,7 +52,7 @@ public float incDicMultiplier = 7;
         }
         else if (direction == 0){
 
-            Debug.Log("twinning audio UP");
+           // Debug.Log("twinning audio UP");
             Source.volume =  Source.volume * incDicMultiplier;
             }
         else
