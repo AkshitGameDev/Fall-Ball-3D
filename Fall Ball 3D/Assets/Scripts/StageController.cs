@@ -7,7 +7,16 @@ public class StageController : MonoBehaviour
     public GameObject pipe = null;
     public GameObject BlockParent;
 
+
+
     public float RotationSpeed = 2f;
+
+
+
+   void DataInit(object data)
+    {
+
+    }
 
     // Start is called before the first frame update
     void Start()
@@ -15,8 +24,10 @@ public class StageController : MonoBehaviour
 
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
-        BlockParent.transform.Rotate(BlockParent.transform.rotation.x, BlockParent.transform.rotation.y + RotationSpeed, BlockParent.transform.rotation.z);
+        RotationSpeed += 0.1f;
+        BlockParent.transform.Rotate(BlockParent.transform.rotation.x,RotationSpeed, BlockParent.transform.rotation.z);
+
     }
 }

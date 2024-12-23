@@ -44,6 +44,10 @@ public class GameManager : MonoBehaviour
 
     bool FirstTimePlaying = true;
 
+    // States
+
+    public bool isPlaying = true;
+
     private void Awake()
     {
         instance = this;
