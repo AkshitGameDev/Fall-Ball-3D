@@ -30,6 +30,8 @@ public class StageSpawnner : MonoBehaviour
     int spawnned = 0;
 
     bool spawnPlayer = false;
+    [DoNotSerialize]
+    public int blockCount = 0;
 
 
     // Start is called before the first frame updat
@@ -40,6 +42,9 @@ public class StageSpawnner : MonoBehaviour
 
     public void getCredentials(int blocks)
     {
+        blockCount = blocks;
+        Debug.Log("Block Count: " + blockCount);
+        CameraFlow.instance.restructureCamPos("start");
         Debug.Log("number of blocks" + blocks);
         TotalblocksSpawnnedInTower = blocks;
         SpawnStage();
@@ -104,3 +109,4 @@ public class StageSpawnner : MonoBehaviour
         
     }
 }
+

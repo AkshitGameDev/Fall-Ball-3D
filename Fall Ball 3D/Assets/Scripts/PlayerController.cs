@@ -4,76 +4,48 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    public float bounceHeight = 2f;
+    public float bounceSpeed = 2f;
+    public AnimationCurve easeOutCurve;  // Create this in Inspector
+    public float fallSpeed = 10f;
 
+    private Vector3 startPosition;
+    private float timer;
+    private bool isFalling = false;
 
-    [SerializeField]
-    Camera camera = null;
-    GameObject cameraPoint = null;
-    [SerializeField]
-    float bounceMagnitude = 20.0f;
-    [SerializeField]
-    float jumpHight = 1.7f;
-    bool dirUp = false;
-    float bounce = 0.0f;
-
-    bool holding = false;
-
-    GameObject PlayerPoint = null;
-
-    // Start is called before the first frame update
     void Start()
     {
-        camera = Camera.main;
-        PlayerPoint = StageSpawnner.instance.playerPoint;
+        startPosition = transform.position;
+
+        // If not set manually, use a default ease out curve
+        if (easeOutCurve == null || easeOutCurve.length == 0)
+        {
+            easeOutCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+        }
     }
 
-    void bounceBack()
-    {
-        dirUp = false;
-    }
-
-    void checkHold()
-    {
-
-    }
-
-    // Update is called once per frame
     void Update()
     {
-       checkHold();
-       if (!GameManager.instance.isPlaying) return;
-       if(!holding) {//defalt 
-            if (dirUp)
-            {
-                bounce += (this.jumpHight * Time.deltaTime);
-            }
-            else
-            {
-                bounce -= (this.jumpHight * Time.deltaTime);
-            }
-
-            if(bounce >= 1)
-            {
-                bounce = 1;
-                dirUp = false;
-            }
-            this.gameObject.transform.position = new Vector3(this.gameObject.transform.position.x,
-           this.gameObject.transform.position.y + Mathf.Sin(bounce),
-           this.gameObject.transform.position.z);
-        }
-
-       
-        
-    }
-
-    private void OnCollisionEnter(Collision collision)
-    {
-        if (collision.collider.tag == "breakable" && !holding)
+        if (Input.GetMouseButton(0))  // Mobile tap/hold
         {
-            Debug.Log("setting dir up true");
-            dirUp = true;
+            isFalling = true;
+        }
+        else
+        {
+            isFalling = false;
+        }
+
+        if (isFalling)
+        {
+            transform.position += Vector3.down * fallSpeed * Time.deltaTime;
+        }
+        else
+        {
+            timer += Time.deltaTime * bounceSpeed;
+            float curveValue = easeOutCurve.Evaluate(Mathf.PingPong(timer, 1f));
+            Vector3 newPosition = startPosition + Vector3.up * bounceHeight * curveValue;
+            transform.position = newPosition;
         }
     }
 
-    
 }

@@ -9,8 +9,6 @@ public class StageController : MonoBehaviour
 
 
 
-    public float RotationSpeed = 2f;
-
 
 
    void DataInit(object data)
@@ -26,8 +24,7 @@ public class StageController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        RotationSpeed += 0.1f;
-        BlockParent.transform.Rotate(BlockParent.transform.rotation.x,RotationSpeed, BlockParent.transform.rotation.z);
+       
 
     }
 }
