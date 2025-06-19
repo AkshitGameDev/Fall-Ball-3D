@@ -20,7 +20,9 @@ public class PlayerController : MonoBehaviour
         // If not set manually, use a default ease out curve
         if (easeOutCurve == null || easeOutCurve.length == 0)
         {
-            easeOutCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+           if (isFalling) easeOutCurve = AnimationCurve.EaseInOut(0, 0, 0, 0);
+
+           easeOutCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
         }
     }
 
