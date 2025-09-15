@@ -12,9 +12,10 @@ GameObject:
   - component: {fileID: 5490948695903380517}
   - component: {fileID: 577618184730876637}
   - component: {fileID: 1314405567237293416}
+  - component: {fileID: 8507038580506614032}
   m_Layer: 0
   m_Name: b_mesh
-  m_TagString: breakable
+  m_TagString: ground
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -106,6 +107,18 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &8507038580506614032
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1411421054483526302}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cec463745e74cbb459098541a0ba3c1a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &7637140466619673045
 GameObject:
   m_ObjectHideFlags: 0
@@ -117,7 +130,7 @@ GameObject:
   - component: {fileID: 8746599546184922158}
   m_Layer: 0
   m_Name: block
-  m_TagString: breakable
+  m_TagString: ground
   m_Icon: {fileID: 4422084297763085224, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

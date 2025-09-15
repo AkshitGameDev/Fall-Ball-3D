@@ -53,7 +53,7 @@ public class GameManager : MonoBehaviour
         instance = this;
         if (PlayerPrefs.GetString("CurLevel") == null)
         {
-            PlayerPrefs.SetString("CurLevel", "0");
+            PlayerPrefs.SetString("CurLevel", "1");
             PlayerPrefs.SetInt("CurGems", 50);
             Level = PlayerPrefs.GetString("CurLevel");
             gems = PlayerPrefs.GetInt("CurGems");

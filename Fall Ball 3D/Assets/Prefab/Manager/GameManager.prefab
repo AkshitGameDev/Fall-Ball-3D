@@ -78,7 +78,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_UiScaleMode: 1
+  m_UiScaleMode: 0
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
   m_ReferenceResolution: {x: 1920, y: 1080}
@@ -1192,6 +1192,7 @@ MonoBehaviour:
   - {fileID: 3325288944325465230}
   - {fileID: 4464267869041047537}
   TestButon: {fileID: 0}
+  isPlaying: 1
 --- !u!1 &6211335949568845718
 GameObject:
   m_ObjectHideFlags: 0
@@ -1336,6 +1337,7 @@ MonoBehaviour:
   muteBut: {fileID: 0}
   MenuSfx: {fileID: 8300000, guid: b735a66a6295f2d45bbeea3c45c5db59, type: 3}
   startSfx: {fileID: 8300000, guid: f82d6cc43d73af247b208993660fcab8, type: 3}
+  endSfx: {fileID: 0}
   twoWayTweenTime: 0.18
   incDicMultiplier: 7
 --- !u!1 &6397608064821736836
