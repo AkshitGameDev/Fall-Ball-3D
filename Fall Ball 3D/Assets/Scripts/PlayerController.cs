@@ -25,19 +25,28 @@ public class PlayerController : MonoBehaviour
     private Vector3 bounceBase;      // fixed for the current bounce cycle
     private bool hasAnchor;          // do we have a valid base?
 
+    // NEW: the BlockController beneath the player (if any)
+    public BlockController currentBlockBelow { get; private set; }
+
     void Start()
     {
         col = GetComponent<Collider>();
         rising = true; t = 0f;
-        if (TryGetGroundBelow(out var anchor)) { bounceBase = anchor; hasAnchor = true; }
+
+        if (TryGetGroundBelow(out var anchor, out var block))
+        {
+            bounceBase = anchor; hasAnchor = true;
+            currentBlockBelow = block;
+        }
     }
 
     void FixedUpdate()
     {
         if (isFrozen) return;
 
-        // ONE ground check per physics tick
-        bool groundHit = TryGetGroundBelow(out var groundAnchor);
+        // One raycast per physics tick (also fetch BlockController)
+        bool groundHit = TryGetGroundBelow(out var groundAnchor, out var blockBelow);
+        currentBlockBelow = blockBelow; // keep this updated every tick
 
         bool inputDown = Input.GetMouseButton(0) || Input.touchCount > 0;
 
@@ -84,15 +93,26 @@ public class PlayerController : MonoBehaviour
         transform.position = target;
     }
 
-    private bool TryGetGroundBelow(out Vector3 anchor)
+    // UPDATED: also returns the BlockController found on the hit object (or its parents)
+    private bool TryGetGroundBelow(out Vector3 anchor, out BlockController block)
     {
         anchor = transform.position;
+        block = null;
+
         Ray ray = new Ray(transform.position + Vector3.up * 0.05f, Vector3.down);
         if (Physics.Raycast(ray, out var hit, groundCheckDistance,
                 groundMask.value != 0 ? groundMask : Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
         {
-            if (groundMask.value == 0 && !hit.collider.CompareTag(groundTag)) return false;
+            // If no mask, enforce tag for anchoring bounce
+            if (groundMask.value == 0 && !hit.collider.CompareTag(groundTag))
+                return false;
+
             anchor = hit.point + Vector3.up * GetHalfHeight();
+
+            // Try to get BlockController on the hit object or its parents
+            block = hit.collider.GetComponent<BlockController>()
+                    ?? hit.collider.GetComponentInParent<BlockController>();
+
             return true;
         }
         return false;
@@ -111,6 +131,7 @@ public class PlayerController : MonoBehaviour
         if (col != null) col.isTrigger = isTrigger;
     }
 
+    // (Optional) If you no longer want to stop on enemy/stage, remove these two handlers.
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag(enemyTag) || other.CompareTag(stageTag)) Freeze();
@@ -119,6 +140,7 @@ public class PlayerController : MonoBehaviour
     {
         if (c.collider.CompareTag(enemyTag) || c.collider.CompareTag(stageTag)) Freeze();
     }
+
     private void Freeze()
     {
         isFrozen = true;
