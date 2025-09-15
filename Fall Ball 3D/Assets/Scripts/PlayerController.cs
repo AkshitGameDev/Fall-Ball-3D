@@ -5,104 +5,93 @@ public class PlayerController : MonoBehaviour
 {
     [Header("Bounce (linear)")]
     [Range(0f, 10f)] public float bounceHeight = 2f;
-    [Range(0.1f, 20f)] public float bounceSpeed = 2f;  // units per second along the 0..1 bounce phase
+    [Range(0.1f, 20f)] public float bounceSpeed = 2f; // world units/sec
 
     [Header("Fall (constant speed)")]
     [Range(0.1f, 30f)] public float fallSpeed = 6f;
     public float groundCheckDistance = 2f;
     public LayerMask groundMask;
 
-    [Header("Tags")]
+    [Header("Tags (only used if groundMask == 0)")]
     public string groundTag = "ground";
     public string enemyTag = "enemy";
     public string stageTag = "stage";
 
     private Collider col;
-    private Vector3 basePos;
-    private bool isFalling;
-    private bool isFrozen;
 
-    // Linear bounce state
-    private float t = 0f;     // 0..1 (0 = base, 1 = top)
-    private bool rising = true;
+    // Bounce state
+    private bool isFalling, isFrozen, rising;
+    private float t;                 // 0..1 phase
+    private Vector3 bounceBase;      // fixed for the current bounce cycle
+    private bool hasAnchor;          // do we have a valid base?
 
     void Start()
     {
         col = GetComponent<Collider>();
-        basePos = transform.position;
-        t = 0f;
-        rising = true; // start from base -> go up
+        rising = true; t = 0f;
+        if (TryGetGroundBelow(out var anchor)) { bounceBase = anchor; hasAnchor = true; }
     }
 
-    void Update()
+    void FixedUpdate()
     {
         if (isFrozen) return;
+
+        // ONE ground check per physics tick
+        bool groundHit = TryGetGroundBelow(out var groundAnchor);
 
         bool inputDown = Input.GetMouseButton(0) || Input.touchCount > 0;
 
         if (inputDown)
         {
-            // start/keep falling from CURRENT position (no snap)
-            if (!isFalling)
-            {
-                isFalling = true;
-                SetTrigger(true); // pass through ground
-            }
-            transform.position += Vector3.down * fallSpeed * Time.deltaTime;
+            if (!isFalling) { isFalling = true; SetTrigger(true); }
+            transform.position += Vector3.down * fallSpeed * Time.fixedDeltaTime;
+            hasAnchor = false;
             return;
         }
 
-        // released -> stop falling, resume bounce linearly
         if (isFalling)
         {
             isFalling = false;
             SetTrigger(false);
 
-            // Re-anchor bounce to ground and sync phase t to current height
-            if (TryGetGroundBelow(out var anchor))
+            if (groundHit)
             {
-                basePos = anchor;
+                bounceBase = groundAnchor;
+                hasAnchor = true;
 
-                float offset = (transform.position.y - basePos.y) / Mathf.Max(0.0001f, bounceHeight);
+                float offset = (transform.position.y - bounceBase.y) / Mathf.Max(0.0001f, bounceHeight);
                 t = Mathf.Clamp01(offset);
 
-                // Always continue the pattern "down -> up -> down":
-                // If we're at/near base, start rising; if above base, keep current direction if sensible.
                 if (t <= 0.001f) rising = true;
                 else if (t >= 0.999f) rising = false;
-                // otherwise keep 'rising' as-is
             }
         }
 
-        // BOUNCE (linear triangle wave around ground anchor)
-        if (TryGetGroundBelow(out var anchor2))
+        if (!hasAnchor)
         {
-            basePos = anchor2;
-
-            // advance linear phase
-            float delta = (bounceSpeed / Mathf.Max(0.0001f, bounceHeight)) * Time.deltaTime; // convert world u/s to phase u/s
-            t += (rising ? +delta : -delta);
-
-            if (t >= 1f) { t = 1f; rising = false; }
-            else if (t <= 0f) { t = 0f; rising = true; }
-
-            Vector3 target = basePos + Vector3.up * (bounceHeight * t);
-            transform.position = target;
+            if (groundHit) { bounceBase = groundAnchor; hasAnchor = true; }
+            else return;
         }
-        // else: no ground below -> hold current position
+
+        // convert world speed -> phase delta
+        float phaseDelta = (bounceSpeed / Mathf.Max(0.0001f, bounceHeight)) * Time.fixedDeltaTime;
+        t += rising ? phaseDelta : -phaseDelta;
+
+        if (t >= 1f) { t = 1f; rising = false; }
+        else if (t <= 0f) { t = 0f; rising = true; }
+
+        Vector3 target = bounceBase + Vector3.up * (bounceHeight * t);
+        transform.position = target;
     }
 
     private bool TryGetGroundBelow(out Vector3 anchor)
     {
         anchor = transform.position;
-
         Ray ray = new Ray(transform.position + Vector3.up * 0.05f, Vector3.down);
         if (Physics.Raycast(ray, out var hit, groundCheckDistance,
                 groundMask.value != 0 ? groundMask : Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
         {
-            // If no mask given, enforce tag
             if (groundMask.value == 0 && !hit.collider.CompareTag(groundTag)) return false;
-
             anchor = hit.point + Vector3.up * GetHalfHeight();
             return true;
         }
@@ -126,12 +115,10 @@ public class PlayerController : MonoBehaviour
     {
         if (other.CompareTag(enemyTag) || other.CompareTag(stageTag)) Freeze();
     }
-
-    private void OnCollisionEnter(Collision collision)
+    private void OnCollisionEnter(Collision c)
     {
-        if (collision.collider.CompareTag(enemyTag) || collision.collider.CompareTag(stageTag)) Freeze();
+        if (c.collider.CompareTag(enemyTag) || c.collider.CompareTag(stageTag)) Freeze();
     }
-
     private void Freeze()
     {
         isFrozen = true;
