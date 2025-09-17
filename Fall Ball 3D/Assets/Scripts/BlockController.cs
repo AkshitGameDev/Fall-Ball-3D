@@ -9,7 +9,7 @@ public class BlockController : MonoBehaviour
     {
         if (death)
         {
-            StageSpawnner.instance.destroySpecific()
+            StageSpawnner.instance.destroySpecific();
         }
         else
         {
