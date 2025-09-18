@@ -103,6 +103,11 @@ public class StageSpawnner : MonoBehaviour
 
     }
 
+    public void destroySpecific()
+    {
+      
+    }
+
     // Update is called once per frame
     void Update()
     {

@@ -1,18 +1,20 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class BlockController : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    BlockController(bool death = true)
     {
-        
-    }
+        if (death)
+        {
+            StageSpawnner.instance.destroySpecific();
+        }
+        else
+        {
+            //sp[awnning squence
 
-    // Update is called once per frame
-    void Update()
-    {
-        
+        }
     }
 }
