@@ -1,21 +1,18 @@
 using UnityEngine;
+using DG.Tweening;
 
 public class PlayerController : MonoBehaviour
 {
-    
-    public float Speed = 2f;
+    public float speed = 0.45f;
+    public float basePos = 1f;
+    public float bouncePos = 5f;
 
-    Vector3 basePosition = new Vector3(0f,0f,0f);
-    Vector3 bouncePosition = new Vector3(0f, 2f, 0f);
-
-    GameObject Ball;
-    Collider BalLCollider;
-
-
+    GameObject ball;
+    Collider balLCollider;
+    Rigidbody ballRigidbody;
 
     public float fallSpeedMin = 2f;
     public float fallSpeedMax = 4f;
-
 
     public float groundCheckDistance = 2f;
     public LayerMask groundMask;
@@ -24,25 +21,69 @@ public class PlayerController : MonoBehaviour
     public string enemyTag = "enemy";
     public string stageTag = "stage";
 
+    Tween moveTw;
+    bool falling; // current state
 
-
-    private void Start()
+    void Start()
     {
+        ball = transform.GetChild(0).gameObject;
+        balLCollider = ball.GetComponent<Collider>();
+        ballRigidbody = ball.GetComponent<Rigidbody>();
 
+        // Ensure starting at base
+        var p = ball.transform.localPosition;
+        ball.transform.localPosition = new Vector3(p.x, basePos, p.z);
+
+        StartIdleLoop();
     }
 
-    private void FixedUpdate()
+    void Update()
     {
-        bool Clicked = false;
-        if (!Clicked)
+        bool inputHeld = IsHeld();
+        if (inputHeld != falling) // state changed
         {
-            transform.DOMove(new Vector3(5, 2, 0), 2f);
+            falling = inputHeld;
+            moveTw?.Kill();
+
+            if (falling)
+            {
+                // Go down and stay there
+                moveTw = ball.transform
+                    .DOLocalMoveY(basePos, speed)
+                    .SetEase(Ease.OutQuad);
+            }
+            else
+            {
+                StartIdleLoop(); // resume natural up–down
+            }
         }
     }
 
+    void StartIdleLoop()
+    {
+        var seq = DOTween.Sequence();
+        seq.Append(ball.transform.DOLocalMoveY(bouncePos, speed).SetEase(Ease.InSine));
+        seq.Append(ball.transform.DOLocalMoveY(basePos, speed).SetEase(Ease.OutQuad));
+        moveTw = seq.SetLoops(-1);
+    }
 
+    // True while mouse/touch/space is HELD
+    bool IsHeld()
+    {
+        if (Input.GetMouseButton(0)) return true;
+        if (Input.touchCount > 0)
+        {
+            var t0 = Input.GetTouch(0).phase;
+            if (t0 != TouchPhase.Ended && t0 != TouchPhase.Canceled) return true;
+        }
+        if (Input.GetKey(KeyCode.Space)) return true;
+        return false;
+    }
 
+    void OnDisable() => moveTw?.Kill();
 }
+
+
 
 /*[Header("Bounce (linear)")]
 [Range(0f, 10f)] public float bounceHeight = 2f;
