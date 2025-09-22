@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 8507038580506614032}
   m_Layer: 0
   m_Name: b_mesh
-  m_TagString: ground
+  m_TagString: block
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -130,7 +130,7 @@ GameObject:
   - component: {fileID: 8746599546184922158}
   m_Layer: 0
   m_Name: block
-  m_TagString: ground
+  m_TagString: block
   m_Icon: {fileID: 4422084297763085224, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

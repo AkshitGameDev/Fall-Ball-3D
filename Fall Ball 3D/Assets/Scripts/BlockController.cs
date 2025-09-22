@@ -5,16 +5,8 @@ using UnityEngine;
 
 public class BlockController : MonoBehaviour
 {
-    BlockController(bool death = true)
+    private void OnDestroy()
     {
-        if (death)
-        {
-            StageSpawnner.instance.destroySpecific();
-        }
-        else
-        {
-            //sp[awnning squence
-
-        }
+        
     }
 }

@@ -1,5 +1,6 @@
 using UnityEngine;
 using DG.Tweening;
+using Unity.VisualScripting;
 
 public class PlayerController : MonoBehaviour
 {
@@ -8,11 +9,11 @@ public class PlayerController : MonoBehaviour
     public float bouncePos = 5f;
 
     GameObject ball;
-    Collider balLCollider;
-    Rigidbody ballRigidbody;
 
     public float fallSpeedMin = 2f;
     public float fallSpeedMax = 4f;
+
+    bool isHostile = false;
 
     public float groundCheckDistance = 2f;
     public LayerMask groundMask;
@@ -27,8 +28,6 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         ball = transform.GetChild(0).gameObject;
-        balLCollider = ball.GetComponent<Collider>();
-        ballRigidbody = ball.GetComponent<Rigidbody>();
 
         // Ensure starting at base
         var p = ball.transform.localPosition;
@@ -50,14 +49,48 @@ public class PlayerController : MonoBehaviour
                 // Go down and stay there
                 moveTw = ball.transform
                     .DOLocalMoveY(basePos, speed)
-                    .SetEase(Ease.OutQuad);
+                    .SetEase(Ease.OutQuad)
+                    .OnComplete(() =>
+                    {
+                        BecomeHoustile();
+                    });
+               
             }
             else
             {
                 StartIdleLoop(); // resume natural up–down
             }
         }
+
+        if (isHostile)
+        {
+            if (CameraFlow.instance != null)
+            {
+                float p = transform.position.y;
+                CameraFlow.instance.restructureCamPos("move", false, p);
+            }
+        }
     }
+
+    public void BecomeHoustile()
+    {
+
+        isHostile = true;
+        Debug.Log("fucked a block up bitch ass");
+        transform.DOMoveY(3f, StageSpawnner.instance.blockCount / 10).SetEase(Ease.OutQuad);
+    }
+
+    void OnCollisionEnter(Collision collision)
+    {
+        if (isHostile && collision.gameObject.CompareTag(blockTag))
+        {
+            Destroy(collision.gameObject);
+            Debug.Log("fucked a block up");
+        }
+    }
+
+
+
 
     void StartIdleLoop()
     {
