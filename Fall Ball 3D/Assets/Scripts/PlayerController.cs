@@ -1,37 +1,39 @@
 using UnityEngine;
 using DG.Tweening;
-using Unity.VisualScripting;
 
 public class PlayerController : MonoBehaviour
 {
-    public float speed = 0.45f;
+    [Header("Visual bounce")]
+    public float bounceStepDuration = 0.1f; // time to go base -> bounce or bounce -> base
     public float basePos = 1f;
     public float bouncePos = 5f;
 
-    GameObject ball;
+    [Header("Falling (parent)")]
+    public float fallSpeed = 2f;            // units/sec while input is held
+    public float ballSnapDuration = 0.1f;  // time to snap ball to base when falling starts
 
-    public float fallSpeedMin = 2f;
-    public float fallSpeedMax = 4f;
-
-    bool isHostile = false;
-
-    public float groundCheckDistance = 2f;
-    public LayerMask groundMask;
-
+    [Header("Tags")]
     public string blockTag = "block";
     public string enemyTag = "enemy";
     public string stageTag = "stage";
 
-    Tween moveTw;
-    bool falling; // current state
+    GameObject ball;
+
+    Tween bounceTw;   // idle bounce sequence (on ball)
+    Tween fallTw;     // continuous fall (on parent)
+    Tween snapTw;     // snap ball to base when entering falling
+    bool falling;     // input-held state
+    bool isHostile;   // destroy blocks only when true
+
+    
 
     void Start()
     {
         ball = transform.GetChild(0).gameObject;
 
-        // Ensure starting at base
-        var p = ball.transform.localPosition;
-        ball.transform.localPosition = new Vector3(p.x, basePos, p.z);
+        // Start ball at base (so it never starts frozen at the top)
+        var lp = ball.transform.localPosition;
+        ball.transform.localPosition = new Vector3(lp.x, basePos, lp.z);
 
         StartIdleLoop();
     }
@@ -39,220 +41,84 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
         bool inputHeld = IsHeld();
+
+        CameraFlow.instance.restructureCamPos("move", false, transform.position.y);
         if (inputHeld != falling) // state changed
         {
-            falling = inputHeld;
-            moveTw?.Kill();
+            if (CameraFlow.instance != null) falling = inputHeld;
+
+            // Stop tweens but DO NOT complete them (keeps the parent at its current Y)
+            bounceTw?.Kill(false);
+            fallTw?.Kill(false);
+            snapTw?.Kill(false);
 
             if (falling)
             {
-                // Go down and stay there
-                moveTw = ball.transform
-                    .DOLocalMoveY(basePos, speed)
-                    .SetEase(Ease.OutQuad)
-                    .OnComplete(() =>
-                    {
-                        BecomeHoustile();
-                    });
+                isHostile = true;
+                
+                // snap the BALL down to base from current local Y
+                snapTw = ball.transform
+                    .DOLocalMoveY(basePos, 0.25f)
+                    .SetEase(Ease.Linear);
+
+                // continuous fall of the PARENT
+                float bigDistance = 1000f, duration = bigDistance / Mathf.Max(0.01f, fallSpeed);
+                fallTw = transform
+                    .DOMoveY(transform.position.y - bigDistance, duration)
+                    .SetEase(Ease.Linear);
                
             }
             else
             {
-                StartIdleLoop(); // resume natural up–down
+                isHostile = false;
+
+                // ***** KEY PART: align ball's WORLD Y to the parent's current baseline (point 2)
+                var pos = ball.transform.position;
+                float targetWorldY = transform.position.y + basePos; // base relative to new parent height
+                ball.transform.position = new Vector3(pos.x, targetWorldY, pos.z);
+
+                StartIdleLoop(); // now bounce starts from point 2
             }
         }
-
-        if (isHostile)
-        {
-            if (CameraFlow.instance != null)
-            {
-                float p = transform.position.y;
-                CameraFlow.instance.restructureCamPos("move", false, p);
-            }
-        }
     }
-
-    public void BecomeHoustile()
-    {
-
-        isHostile = true;
-        Debug.Log("fucked a block up bitch ass");
-        transform.DOMoveY(3f, StageSpawnner.instance.blockCount / 10).SetEase(Ease.OutQuad);
-    }
-
-    void OnCollisionEnter(Collision collision)
-    {
-        if (isHostile && collision.gameObject.CompareTag(blockTag))
-        {
-            Destroy(collision.gameObject);
-            Debug.Log("fucked a block up");
-        }
-    }
-
-
-
 
     void StartIdleLoop()
     {
+        // Ball bounces between base and bounce while idle
         var seq = DOTween.Sequence();
-        seq.Append(ball.transform.DOLocalMoveY(bouncePos, speed).SetEase(Ease.InSine));
-        seq.Append(ball.transform.DOLocalMoveY(basePos, speed).SetEase(Ease.OutQuad));
-        moveTw = seq.SetLoops(-1);
+        seq.Append(ball.transform.DOLocalMoveY(bouncePos, bounceStepDuration).SetEase(Ease.InSine));
+        seq.Append(ball.transform.DOLocalMoveY(basePos, bounceStepDuration).SetEase(Ease.OutQuad));
+        bounceTw = seq.SetLoops(-1);
     }
 
-    // True while mouse/touch/space is HELD
     bool IsHeld()
     {
         if (Input.GetMouseButton(0)) return true;
         if (Input.touchCount > 0)
         {
-            var t0 = Input.GetTouch(0).phase;
-            if (t0 != TouchPhase.Ended && t0 != TouchPhase.Canceled) return true;
+            var ph = Input.GetTouch(0).phase;
+            if (ph != TouchPhase.Ended && ph != TouchPhase.Canceled) return true;
         }
         if (Input.GetKey(KeyCode.Space)) return true;
         return false;
     }
 
-    void OnDisable() => moveTw?.Kill();
-}
-
-
-
-/*[Header("Bounce (linear)")]
-[Range(0f, 10f)] public float bounceHeight = 2f;
-[Range(0.1f, 20f)] public float bounceSpeed = 2f; // world units/sec
-
-
-
-
-private Collider col;
-
-// Bounce state
-private bool isFalling, isFrozen, rising;
-private float t;                 // 0..1 phase
-private Vector3 bounceBase;      // fixed for the current bounce cycle
-private bool hasAnchor;          // do we have a valid base?
-
-// NEW: the BlockController beneath the player (if any)
-public BlockController currentBlockBelow { get; private set; }
-
-void Start()
-{
-    col = GetComponent<Collider>();
-    rising = true; t = 0f;
-
-    if (TryGetGroundBelow(out var anchor, out var block))
+    void OnCollisionEnter(Collision collision)
     {
-        bounceBase = anchor; hasAnchor = true;
-        currentBlockBelow = block;
-    }
-}
-
-void FixedUpdate()
-{
-    if (isFrozen) return;
-
-    // One raycast per physics tick (also fetch BlockController)
-    bool groundHit = TryGetGroundBelow(out var groundAnchor, out var blockBelow);
-    currentBlockBelow = blockBelow; // keep this updated every tick
-
-    bool inputDown = Input.GetMouseButton(0) || Input.touchCount > 0;
-
-    if (inputDown)
-    {
-        if (!isFalling) { isFalling = true; SetTrigger(true); }
-        transform.position += Vector3.down * fallSpeed * Time.fixedDeltaTime;
-        hasAnchor = false;
-        return;
+        if (isHostile && collision.gameObject.CompareTag(blockTag))
+            Destroy(collision.gameObject);
     }
 
-    if (isFalling)
+    void OnCollisionStay(Collision collision)
     {
-        isFalling = false;
-        SetTrigger(false);
-
-        if (groundHit)
-        {
-            bounceBase = groundAnchor;
-            hasAnchor = true;
-
-            float offset = (transform.position.y - bounceBase.y) / Mathf.Max(0.0001f, bounceHeight);
-            t = Mathf.Clamp01(offset);
-
-            if (t <= 0.001f) rising = true;
-            else if (t >= 0.999f) rising = false;
-        }
+        if (isHostile && collision.gameObject.CompareTag(blockTag))
+            Destroy(collision.gameObject);
     }
 
-    if (!hasAnchor)
+    void OnDisable()
     {
-        if (groundHit) { bounceBase = groundAnchor; hasAnchor = true; }
-        else return;
+        bounceTw?.Kill();
+        fallTw?.Kill();
+        snapTw?.Kill();
     }
-
-    // convert world speed -> phase delta
-    float phaseDelta = (bounceSpeed / Mathf.Max(0.0001f, bounceHeight)) * Time.fixedDeltaTime;
-    t += rising ? phaseDelta : -phaseDelta;
-
-    if (t >= 1f) { t = 1f; rising = false; }
-    else if (t <= 0f) { t = 0f; rising = true; }
-
-    Vector3 target = bounceBase + Vector3.up * (bounceHeight * t);
-    transform.position = target;
 }
-
-// UPDATED: also returns the BlockController found on the hit object (or its parents)
-private bool TryGetGroundBelow(out Vector3 anchor, out BlockController block)
-{
-    anchor = transform.position;
-    block = null;
-
-    Ray ray = new Ray(transform.position + Vector3.up * 0.05f, Vector3.down);
-    if (Physics.Raycast(ray, out var hit, groundCheckDistance,
-            groundMask.value != 0 ? groundMask : Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
-    {
-        // If no mask, enforce tag for anchoring bounce
-        if (groundMask.value == 0 && !hit.collider.CompareTag(groundTag))
-            return false;
-
-        anchor = hit.point + Vector3.up * GetHalfHeight();
-
-        // Try to get BlockController on the hit object or its parents
-        block = hit.collider.GetComponent<BlockController>()
-                ?? hit.collider.GetComponentInParent<BlockController>();
-
-        return true;
-    }
-    return false;
-}
-
-private float GetHalfHeight()
-{
-    if (col is SphereCollider s) return s.radius * Mathf.Abs(transform.localScale.y);
-    if (col is CapsuleCollider c) return (c.height * 0.5f) * Mathf.Abs(transform.localScale.y);
-    if (col is BoxCollider b) return (b.size.y * 0.5f) * Mathf.Abs(transform.localScale.y);
-    return 0.5f;
-}
-
-private void SetTrigger(bool isTrigger)
-{
-    if (col != null) col.isTrigger = isTrigger;
-}
-
-// (Optional) If you no longer want to stop on enemy/stage, remove these two handlers.
-private void OnTriggerEnter(Collider other)
-{
-    if (other.CompareTag(enemyTag) || other.CompareTag(stageTag)) Freeze();
-}
-private void OnCollisionEnter(Collision c)
-{
-    if (c.collider.CompareTag(enemyTag) || c.collider.CompareTag(stageTag)) Freeze();
-}
-
-private void Freeze()
-{
-    isFrozen = true;
-    isFalling = false;
-    SetTrigger(false);
-}
-*/

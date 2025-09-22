@@ -33,7 +33,7 @@ public class CameraFlow : MonoBehaviour
 
     public void restructureCamPos(String message = null, bool editable = false, float ypos = 0.0f)
     {
-        Debug.Log(message);
+       
         if(message == "start")
         {
             this.transform.position = new Vector3(0, StageSpawnner.instance.blockCount * 2 + 15, 25);
@@ -47,6 +47,7 @@ public class CameraFlow : MonoBehaviour
 
         
         if(message == "move") {
+            Debug.Log(message  + " " + ypos);
             this.transform.position = new Vector3(0, ypos + 15, 25);
             this.transform.eulerAngles = new Vector3(35, 180, 0);
 
