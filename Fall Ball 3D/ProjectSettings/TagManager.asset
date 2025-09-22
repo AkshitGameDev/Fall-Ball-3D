@@ -7,9 +7,10 @@ TagManager:
   - platform
   - plat_pipe
   - breakable
-  - ground
   - enemy
   - stage
+  - block
+  - ground
   layers:
   - Default
   - TransparentFX

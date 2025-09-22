@@ -25,12 +25,29 @@ public class CameraFlow : MonoBehaviour
             
         }
     }
-
-    public void restructureCamPos(String message = null, bool editable = false)
+    public void restructureCamPos()
     {
+
+    }
+
+
+    public void restructureCamPos(String message = null, bool editable = false, float ypos = 0.0f)
+    {
+        Debug.Log(message);
         if(message == "start")
         {
             this.transform.position = new Vector3(0, StageSpawnner.instance.blockCount * 2 + 15, 25);
+            this.transform.eulerAngles = new Vector3(35, 180, 0);
+
+            mainCam.transform.position = this.transform.position;
+            mainCam.transform.eulerAngles = this.transform.eulerAngles;
+
+            return;
+        }
+
+        
+        if(message == "move") {
+            this.transform.position = new Vector3(0, ypos + 15, 25);
             this.transform.eulerAngles = new Vector3(35, 180, 0);
 
             mainCam.transform.position = this.transform.position;
