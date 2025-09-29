@@ -1,16 +1,17 @@
 using UnityEngine;
 using DG.Tweening;
+using Unity.VisualScripting;
 
 public class PlayerController : MonoBehaviour
 {
     [Header("Visual bounce")]
-    public float bounceStepDuration = 0.1f; // time to go base -> bounce or bounce -> base
+    public float bounceStepDuration = 0.1f;
     public float basePos = 1f;
     public float bouncePos = 5f;
 
     [Header("Falling (parent)")]
-    public float fallSpeed = 2f;            // units/sec while input is held
-    public float ballSnapDuration = 0.1f;  // time to snap ball to base when falling starts
+    public float fallSpeed = 2f;
+    public float ballSnapDuration = 0.1f;
 
     [Header("Tags")]
     public string blockTag = "block";
@@ -25,7 +26,15 @@ public class PlayerController : MonoBehaviour
     bool falling;     // input-held state
     bool isHostile;   // destroy blocks only when true
 
-    
+    // down position fixing  vars
+    float minHeight = 1;
+    float curYpos;
+    float updateYpos;
+    float substracter = 2f;
+    float totalDestroyed = 0;
+    float totalNofBlocks = 0;
+
+    bool posNotPropper = false;
 
     void Start()
     {
@@ -38,10 +47,19 @@ public class PlayerController : MonoBehaviour
         StartIdleLoop();
     }
 
+    public void playerSettings(float _totalNofBlocks)
+    {
+        totalNofBlocks = _totalNofBlocks;
+        curYpos = totalNofBlocks * 2 + 1;
+        updateYpos = curYpos;
+    }
+
+
+
     void Update()
     {
         bool inputHeld = IsHeld();
-
+        curYpos = transform.position.y;
         CameraFlow.instance.restructureCamPos("move", false, transform.position.y);
         if (inputHeld != falling) // state changed
         {
@@ -55,7 +73,7 @@ public class PlayerController : MonoBehaviour
             if (falling)
             {
                 isHostile = true;
-                
+
                 // snap the BALL down to base from current local Y
                 snapTw = ball.transform
                     .DOLocalMoveY(basePos, 0.25f)
@@ -66,7 +84,7 @@ public class PlayerController : MonoBehaviour
                 fallTw = transform
                     .DOMoveY(transform.position.y - bigDistance, duration)
                     .SetEase(Ease.Linear);
-               
+
             }
             else
             {
@@ -78,8 +96,12 @@ public class PlayerController : MonoBehaviour
                 ball.transform.position = new Vector3(pos.x, targetWorldY, pos.z);
 
                 StartIdleLoop(); // now bounce starts from point 2
+
             }
         }
+
+
+        
     }
 
     void StartIdleLoop()
@@ -107,12 +129,15 @@ public class PlayerController : MonoBehaviour
     {
         if (isHostile && collision.gameObject.CompareTag(blockTag))
             Destroy(collision.gameObject);
+        totalNofBlocks--;
+        updateYpos = 
     }
 
     void OnCollisionStay(Collision collision)
     {
         if (isHostile && collision.gameObject.CompareTag(blockTag))
             Destroy(collision.gameObject);
+        totalNofBlocks--;
     }
 
     void OnDisable()
