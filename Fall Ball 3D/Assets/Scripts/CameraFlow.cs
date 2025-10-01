@@ -16,18 +16,12 @@ public class CameraFlow : MonoBehaviour
     public GameObject mainCam;
     void Start()
     {
-        // Get the main camera and reference it as a GameObject
         mainCam = Camera.main.gameObject;
-        Debug.Log("CamComponent: " +  mainCam.name);
 
         if(StageSpawnner.instance != null)
         {
             
         }
-    }
-    public void restructureCamPos()
-    {
-
     }
 
 
@@ -47,7 +41,6 @@ public class CameraFlow : MonoBehaviour
 
         
         if(message == "move") {
-            Debug.Log(message  + " " + ypos);
             this.transform.position = new Vector3(0, ypos + 15, 25);
             this.transform.eulerAngles = new Vector3(35, 180, 0);
 
@@ -65,13 +58,10 @@ public class CameraFlow : MonoBehaviour
         }
         else
         {
-            // string parsing algo for boss battle or cam animations or something late game inclusions preparations
             return;
         }
     } 
 
-
-    // calculations for cam position calculations
 
     /*Position: X: 0 Y: Dynamic + 15 Z: 25
 
@@ -82,7 +72,6 @@ public class CameraFlow : MonoBehaviour
 
     /*    private void Update()
         {
-            // Match position
             mainCam.transform.position = this.transform.position;
 
             // Match rotation
