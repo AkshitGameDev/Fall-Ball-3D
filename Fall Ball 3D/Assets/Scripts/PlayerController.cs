@@ -4,87 +4,133 @@ using DG.Tweening;
 public class PlayerController : MonoBehaviour
 {
     [Header("Visual bounce")]
-    public float bounceStepDuration = 0.1f; // time to go base -> bounce or bounce -> base
+    public float bounceStepDuration = 0.5f;
     public float basePos = 1f;
     public float bouncePos = 5f;
 
     [Header("Falling (parent)")]
-    public float fallSpeed = 2f;            // units/sec while input is held
-    public float ballSnapDuration = 0.1f;  // time to snap ball to base when falling starts
+    public float fallSpeed = 10f;       // units/sec while held
+    public float ballSnapDuration = 0.1f;
 
     [Header("Tags")]
     public string blockTag = "block";
     public string enemyTag = "enemy";
     public string stageTag = "stage";
 
+    // refs
     GameObject ball;
 
-    Tween bounceTw;   // idle bounce sequence (on ball)
-    Tween fallTw;     // continuous fall (on parent)
-    Tween snapTw;     // snap ball to base when entering falling
-    bool falling;     // input-held state
-    bool isHostile;   // destroy blocks only when true
+    // tweens
+    Tween bounceTw;   // idle bounce (child)
+    Tween fallTw;     // continuous fall (parent)
+    Tween snapTw;     // snap ball to base on fall start
 
-    
+    // state
+    bool falling;                     // input-held state
+    [SerializeField] public bool isHostile; // destroy blocks when true
+    bool correctingTween = false;
+    bool isShuttingDown = false;
+
+    // height bookkeeping
+    float curYpos;
+    float updateYpos;
+    float totalNofBlocks;
+
+    public static PlayerController instance;
+
+    void Awake()
+    {
+        instance = this;
+    }
 
     void Start()
     {
         ball = transform.GetChild(0).gameObject;
 
-        // Start ball at base (so it never starts frozen at the top)
+        // ensure ball starts at base
         var lp = ball.transform.localPosition;
         ball.transform.localPosition = new Vector3(lp.x, basePos, lp.z);
 
         StartIdleLoop();
     }
 
+    public void PlayerSetting(float _totalNofBlocks)
+    {
+        totalNofBlocks = _totalNofBlocks;
+        curYpos = totalNofBlocks * 2f + 1f;
+        updateYpos = curYpos;
+#if UNITY_EDITOR
+        // Debug.Log($"PlayerSetting: total={totalNofBlocks} cur={curYpos} target={updateYpos}");
+#endif
+    }
+
     void Update()
     {
+        // camera follow
+        if (CameraFlow.instance) CameraFlow.instance.restructureCamPos("move", false, transform.position.y);
+
+        if (correctingTween) return; // pause transitions during correction
+
         bool inputHeld = IsHeld();
+        if (inputHeld == falling) return; // no state change
 
-        CameraFlow.instance.restructureCamPos("move", false, transform.position.y);
-        if (inputHeld != falling) // state changed
+        falling = inputHeld;
+
+        // kill active tweens without completing
+        bounceTw?.Kill(false);
+        fallTw?.Kill(false);
+        snapTw?.Kill(false);
+
+        if (falling)
         {
-            if (CameraFlow.instance != null) falling = inputHeld;
+            isHostile = true;
 
-            // Stop tweens but DO NOT complete them (keeps the parent at its current Y)
-            bounceTw?.Kill(false);
-            fallTw?.Kill(false);
-            snapTw?.Kill(false);
+            // 1) snap BALL (child) to base
+            snapTw = ball.transform
+                .DOLocalMoveY(basePos, Mathf.Max(0.01f, ballSnapDuration))
+                .SetEase(Ease.Linear);
 
-            if (falling)
-            {
-                isHostile = true;
-                
-                // snap the BALL down to base from current local Y
-                snapTw = ball.transform
-                    .DOLocalMoveY(basePos, 0.25f)
-                    .SetEase(Ease.Linear);
+            // 2) continuous FALL of PARENT at constant speed
+            float bigDistance = 1000f;
+            float duration = bigDistance / Mathf.Max(0.01f, fallSpeed);
 
-                // continuous fall of the PARENT
-                float bigDistance = 1000f, duration = bigDistance / Mathf.Max(0.01f, fallSpeed);
-                fallTw = transform
-                    .DOMoveY(transform.position.y - bigDistance, duration)
-                    .SetEase(Ease.Linear);
-               
-            }
-            else
-            {
-                isHostile = false;
+            fallTw = transform
+                .DOMoveY(transform.position.y - bigDistance, duration)
+                .SetEase(Ease.Linear)
+                .OnKill(() =>
+                {
+                    // called when falling tween is stopped (input released)
+                    if (!falling && !isShuttingDown) checkYpos();
+                });
+        }
+        else
+        {
+            isHostile = false;
 
-                // ***** KEY PART: align ball's WORLD Y to the parent's current baseline (point 2)
-                var pos = ball.transform.position;
-                float targetWorldY = transform.position.y + basePos; // base relative to new parent height
-                ball.transform.position = new Vector3(pos.x, targetWorldY, pos.z);
+            // align BALL world Y to parent's current baseline before resuming bounce
+            var pos = ball.transform.position;
+            float targetWorldY = transform.position.y + basePos;
+            ball.transform.position = new Vector3(pos.x, targetWorldY, pos.z);
 
-                StartIdleLoop(); // now bounce starts from point 2
-            }
+            StartIdleLoop();
+        }
+    }
+
+    public void checkYpos()
+    {
+        curYpos = transform.position.y;
+        if (!Mathf.Approximately(curYpos, updateYpos))
+        {
+            correctingTween = true;
+            transform
+                .DOMoveY(updateYpos, 0.1f)
+                .SetEase(Ease.Linear)
+                .OnComplete(() => { correctingTween = false; });
         }
     }
 
     void StartIdleLoop()
     {
-        // Ball bounces between base and bounce while idle
         var seq = DOTween.Sequence();
         seq.Append(ball.transform.DOLocalMoveY(bouncePos, bounceStepDuration).SetEase(Ease.InSine));
         seq.Append(ball.transform.DOLocalMoveY(basePos, bounceStepDuration).SetEase(Ease.OutQuad));
@@ -93,32 +139,26 @@ public class PlayerController : MonoBehaviour
 
     bool IsHeld()
     {
-        if (Input.GetMouseButton(0)) return true;
-        if (Input.touchCount > 0)
-        {
-            var ph = Input.GetTouch(0).phase;
-            if (ph != TouchPhase.Ended && ph != TouchPhase.Canceled) return true;
-        }
-        if (Input.GetKey(KeyCode.Space)) return true;
-        return false;
+        return Input.GetMouseButton(0)
+            || (Input.touchCount > 0 && Input.GetTouch(0).phase != TouchPhase.Ended && Input.GetTouch(0).phase != TouchPhase.Canceled)
+            || Input.GetKey(KeyCode.Space);
     }
+
+        
 
     void OnCollisionEnter(Collision collision)
     {
         if (isHostile && collision.gameObject.CompareTag(blockTag))
             Destroy(collision.gameObject);
-    }
 
-    void OnCollisionStay(Collision collision)
-    {
-        if (isHostile && collision.gameObject.CompareTag(blockTag))
-            Destroy(collision.gameObject);
+        totalNofBlocks--;
+        updateYpos -= 2f;
     }
-
     void OnDisable()
     {
-        bounceTw?.Kill();
-        fallTw?.Kill();
-        snapTw?.Kill();
+        isShuttingDown = true;
+        bounceTw?.Kill(false);
+        fallTw?.Kill(false);
+        snapTw?.Kill(false);
     }
 }

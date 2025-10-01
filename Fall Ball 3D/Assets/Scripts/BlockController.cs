@@ -7,6 +7,6 @@ public class BlockController : MonoBehaviour
 {
     private void OnDestroy()
     {
-        
+        // go to hell biach
     }
 }

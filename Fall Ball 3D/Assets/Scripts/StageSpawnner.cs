@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
+using UnityEditor;
 using UnityEngine;
 
 public class StageSpawnner : MonoBehaviour
@@ -62,7 +63,9 @@ public class StageSpawnner : MonoBehaviour
 
         }
 
-     
+        PlayerController.instance.PlayerSetting(blocks);
+
+
 
     }
 
