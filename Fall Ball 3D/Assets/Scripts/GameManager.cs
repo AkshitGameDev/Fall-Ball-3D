@@ -30,7 +30,7 @@ public class GameManager : MonoBehaviour
     //
 
     public static GameManager instance = null;
-
+    
 
 
 
@@ -46,7 +46,10 @@ public class GameManager : MonoBehaviour
 
     // States
 
-    public bool isPlaying = true;
+    public bool isPlaying = false;
+    public bool isPaused = false;
+    public bool isDead = false;
+    public bool isFinished = false;
 
     private void Awake()
     {
@@ -158,6 +161,9 @@ public class GameManager : MonoBehaviour
 
 
     }
+
+
+    
 }
 
        

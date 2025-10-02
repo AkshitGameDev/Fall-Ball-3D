@@ -34,6 +34,8 @@ public class StageSpawnner : MonoBehaviour
     [DoNotSerialize]
     public int blockCount = 0;
 
+    int enemyIndex = 0;
+
 
     // Start is called before the first frame updat
     void Awake()
@@ -81,6 +83,7 @@ public class StageSpawnner : MonoBehaviour
     {
         var s_block = Instantiate(blockPrefab, new Vector3(0, 0, 0), BlockParent.transform.rotation);
         s_block.transform.SetParent(BlockParent.transform, false);
+        s_block.GetComponent<BlockController>().Settings(true);
         playerPoint.transform.localPosition = new Vector3(playerPoint.transform.localPosition.x, playerPoint.transform.localPosition.y + 2, playerPoint.transform.localPosition.z);
         blocksList.Add(s_block);
     
