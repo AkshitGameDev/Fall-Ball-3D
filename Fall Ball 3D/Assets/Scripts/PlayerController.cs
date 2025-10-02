@@ -59,9 +59,6 @@ public class PlayerController : MonoBehaviour
         totalNofBlocks = _totalNofBlocks;
         curYpos = totalNofBlocks * 2f + 1f;
         updateYpos = curYpos;
-#if UNITY_EDITOR
-        // Debug.Log($"PlayerSetting: total={totalNofBlocks} cur={curYpos} target={updateYpos}");
-#endif
     }
 
     void Update()
@@ -81,16 +78,15 @@ public class PlayerController : MonoBehaviour
         fallTw?.Kill(false);
         snapTw?.Kill(false);
 
-        if (falling)
+        if (falling && transform.position.y >= basePos)
         {
             isHostile = true;
 
-            // 1) snap BALL (child) to base
             snapTw = ball.transform
                 .DOLocalMoveY(basePos, Mathf.Max(0.01f, ballSnapDuration))
                 .SetEase(Ease.Linear);
 
-            // 2) continuous FALL of PARENT at constant speed
+            
             float bigDistance = 1000f;
             float duration = bigDistance / Mathf.Max(0.01f, fallSpeed);
 
@@ -99,7 +95,6 @@ public class PlayerController : MonoBehaviour
                 .SetEase(Ease.Linear)
                 .OnKill(() =>
                 {
-                    // called when falling tween is stopped (input released)
                     if (!falling && !isShuttingDown) checkYpos();
                 });
         }
@@ -107,12 +102,17 @@ public class PlayerController : MonoBehaviour
         {
             isHostile = false;
 
-            // align BALL world Y to parent's current baseline before resuming bounce
+           
             var pos = ball.transform.position;
             float targetWorldY = transform.position.y + basePos;
             ball.transform.position = new Vector3(pos.x, targetWorldY, pos.z);
 
             StartIdleLoop();
+        }
+
+        if(transform.position.y <= basePos)
+        {
+            transform.position = new Vector3(transform.position.x, basePos, transform.position.z);
         }
     }
 
