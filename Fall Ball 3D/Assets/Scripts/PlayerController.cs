@@ -49,6 +49,9 @@ public class PlayerController : MonoBehaviour
         bounceStepDuration = 0.5f;
         fallSpeed = 10f;
         ballSnapDuration = 0.3f;
+
+        GameManager.instance.isPlaying = true;
+
 }
 
     public void PlayerSetting(float _totalNofBlocks)
@@ -60,73 +63,86 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        if (CameraFlow.instance) CameraFlow.instance.restructureCamPos("move", false, transform.position.y);
-        if (correctingTween) return;
-
-        bool rawHeld = IsHeld();
-        if (!rawHeld) groundedLock = false;
-        bool inputHeld = rawHeld && !groundedLock;
-
-        if (inputHeld == falling) goto GroundClamp;
-
-        falling = inputHeld;
-
-        bounceTw?.Kill(false);
-        fallTw?.Kill(false);
-        snapTw?.Kill(false);
-
-        if (falling && transform.position.y >= basePos)
+        if (!GameManager.instance.islevelPassed || !GameManager.instance.isDead)
         {
-            isHostile = true;
+            if (CameraFlow.instance) CameraFlow.instance.restructureCamPos("move", false, transform.position.y);
+            if (correctingTween) return;
 
-            snapTw = ball.transform
-                .DOLocalMoveY(basePos, Mathf.Max(0.01f, ballSnapDuration))
-                .SetEase(Ease.Linear);
+            bool rawHeld = IsHeld();
+            if (!rawHeld) groundedLock = false;
+            bool inputHeld = rawHeld && !groundedLock;
 
-            float bigDistance = 1000f;
-            float duration = bigDistance / Mathf.Max(0.01f, fallSpeed);
+            if (inputHeld == falling) goto GroundClamp;
 
-            fallTw = transform
-                .DOMoveY(transform.position.y - bigDistance, duration)
-                .SetEase(Ease.Linear)
-                .OnKill(() =>
-                {
-                    if (!falling && !isShuttingDown) checkYpos();
-                });
-        }
-        else
-        {
-            isHostile = false;
+            falling = inputHeld;
 
-            var pos = ball.transform.position;
-            float targetWorldY = transform.position.y + basePos;
-            ball.transform.position = new Vector3(pos.x, targetWorldY, pos.z);
+            bounceTw?.Kill(false);
+            fallTw?.Kill(false);
+            snapTw?.Kill(false);
 
-            StartIdleLoop();
-        }
-
-    GroundClamp:
-        {
-            if (transform.position.y <= basePos)
+            if (falling && transform.position.y >= basePos)
             {
-                transform.position = new Vector3(transform.position.x, basePos, transform.position.z);
+                isHostile = true;
 
-                fallTw?.Kill(false);
-                snapTw?.Kill(false);
+                snapTw = ball.transform
+                    .DOLocalMoveY(basePos, Mathf.Max(0.01f, ballSnapDuration))
+                    .SetEase(Ease.Linear);
+
+                float bigDistance = 1000f;
+                float duration = bigDistance / Mathf.Max(0.01f, fallSpeed);
+
+                fallTw = transform
+                    .DOMoveY(transform.position.y - bigDistance, duration)
+                    .SetEase(Ease.Linear)
+                    .OnKill(() =>
+                    {
+                        if (!falling && !isShuttingDown) checkYpos();
+                    });
+            }
+            else
+            {
                 isHostile = false;
-                falling = false;
 
-                groundedLock = true;
+                var pos = ball.transform.position;
+                float targetWorldY = transform.position.y + basePos;
+                ball.transform.position = new Vector3(pos.x, targetWorldY, pos.z);
 
-                var bpos = ball.transform.position;
-                ball.transform.position = new Vector3(bpos.x, basePos + transform.position.y - basePos, bpos.z);
-                ball.transform.localPosition = new Vector3(ball.transform.localPosition.x, basePos, ball.transform.localPosition.z);
-
-                bounceTw?.Kill(false);
                 StartIdleLoop();
             }
+
+        GroundClamp:
+            {
+                if (transform.position.y <= basePos)
+                {
+                    transform.position = new Vector3(transform.position.x, basePos, transform.position.z);
+
+                    fallTw?.Kill(false);
+                    snapTw?.Kill(false);
+                    isHostile = false;
+                    falling = false;
+
+                    groundedLock = true;
+
+                    var bpos = ball.transform.position;
+                    ball.transform.position = new Vector3(bpos.x, basePos + transform.position.y - basePos, bpos.z);
+                    ball.transform.localPosition = new Vector3(ball.transform.localPosition.x, basePos, ball.transform.localPosition.z);
+
+                    bounceTw?.Kill(false);
+                    StartIdleLoop();
+                }
+            }
+            if (transform.position.y == basePos + 0.5f)
+            {
+                GameManager.instance.GameOver("cleared");
+            }
         }
+
+        
+
+
     }
+
+
 
     public void checkYpos()
     {

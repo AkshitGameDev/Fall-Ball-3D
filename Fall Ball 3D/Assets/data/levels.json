@@ -2,16 +2,19 @@
   "levels": [
     {
       "level": 1,
-      "blocks":50
+      "blocks":50,
+      "type":1
     },
     {
       "level": 2,
-      "blocks":100
+      "blocks":100,
+      "type":1
 
     },
     {
       "level": 3,
-      "blocks":150
+      "blocks":150,
+      "type":1
     }
   ]
 }
