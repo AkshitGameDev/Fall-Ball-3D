@@ -49,7 +49,7 @@ public class GameManager : MonoBehaviour
     public bool isPlaying = false;
     public bool isPaused = false;
     public bool isDead = false;
-    public bool isFinished = false;
+    public bool islevelPassed = false;
 
     private void Awake()
     {
@@ -152,18 +152,56 @@ public class GameManager : MonoBehaviour
             // local Storage code gose here
             int level = 0; //level should be equal to the last level played by the player before closing the game it should be saved in api(will be made later) and local storage '0' is for reference.
             int blocks = DataManager.Instance.myLevelList.levels[level].blocks;
+            int type = DataManager.Instance.myLevelList.levels[level].type;
 
-            StageSpawnner.instance.getCredentials(blocks);
-
-
-
+            StageSpawnner.instance.getCredentials(blocks, type);
         }
 
 
     }
 
 
-    
+    public void gemSetter()
+    {
+
+    }
+    public void gemGetter()
+    {
+
+    }
+    public void LevelSetter()
+    {
+
+    }
+    public void LevelGetter()
+    {
+
+    }
+
+    public void openHUD(string hudName = "", int hudIndex = -1)
+    {
+        if(hudName == "" || hudIndex == -1){
+            Debug.Log("nothig to open");
+        }
+    }
+
+    public void GameOver(string cause = "death")
+    {
+        if(cause == "death")
+        {
+            isDead = true;
+            islevelPassed = true;
+            openHUD();
+        }
+        else if(cause == "cleared")
+        {
+            islevelPassed = true;
+            openHUD();
+        }
+    }
+
+
+
 }
 
        

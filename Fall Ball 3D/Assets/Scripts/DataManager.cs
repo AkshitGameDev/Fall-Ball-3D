@@ -18,6 +18,7 @@ public class DataManager : MonoBehaviour
     {
         public int level;
         public int blocks;
+        public int type;
     }
 
     [System.Serializable]

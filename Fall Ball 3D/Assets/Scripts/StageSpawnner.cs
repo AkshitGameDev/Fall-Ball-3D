@@ -43,7 +43,8 @@ public class StageSpawnner : MonoBehaviour
         instance = this;
     }
 
-    public void getCredentials(int blocks)
+    
+    public void getCredentials(int blocks, int type)
     {
         blockCount = blocks;
         Debug.Log("Block Count: " + blockCount);
